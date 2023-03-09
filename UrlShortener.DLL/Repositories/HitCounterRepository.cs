@@ -23,7 +23,7 @@ namespace UrlShortener.DLL.Repositories
 
         public async Task<HitCounterModel> Add(HitCounterModel entity)
         {
-            _mongoCollection.InsertOne(entity);
+            await _mongoCollection.InsertOneAsync(entity);
             return entity;
         }
     }
