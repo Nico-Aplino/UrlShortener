@@ -9,5 +9,6 @@ namespace UrlShortener.BLL.Interfaces
 {
     public interface IUrlRepository: IRootRepository<UrlModel>
     {
+        Task<UrlModel> GetByOriginalUrl(string url);
     }
 }
