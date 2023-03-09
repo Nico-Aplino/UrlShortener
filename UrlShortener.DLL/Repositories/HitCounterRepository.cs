@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using UrlShortener.BLL.Interfaces;
@@ -12,10 +13,9 @@ namespace UrlShortener.DLL.Repositories
 {
     public class HitCounterRepository : IHitCounterRepository
     {
-        private readonly IMongoDbSettings _settings;
         private readonly IMongoCollection<HitCounterModel> _mongoCollection;
 
-        public HitCounterRepository(IMongoClient mongoClient)
+        public HitCounterRepository(IMongoDbSettings _settings, IMongoClient mongoClient)
         {
             var db = mongoClient.GetDatabase(_settings.DatabaseName);
             _mongoCollection = db.GetCollection<HitCounterModel>("hitCounter");

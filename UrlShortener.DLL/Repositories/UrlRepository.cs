@@ -13,10 +13,9 @@ namespace UrlShortener.DLL.Repositories
 {
     public class UrlRepository : IUrlRepository
     {
-        private readonly IMongoDbSettings _settings;
         private readonly IMongoCollection<UrlModel> _mongoCollection;
 
-        public UrlRepository(IMongoClient mongoClient)
+        public UrlRepository(IMongoDbSettings _settings, IMongoClient mongoClient)
         {
             IMongoDatabase db = mongoClient.GetDatabase(_settings.DatabaseName);
             _mongoCollection = db.GetCollection<UrlModel>("urlCollection");
