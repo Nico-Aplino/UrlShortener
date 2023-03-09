@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UrlShortener.BLL.Models;
 using UrlShortener.BLL.Models.RequestModels;
 using UrlShortener.DLL.Services.UrlService;
 

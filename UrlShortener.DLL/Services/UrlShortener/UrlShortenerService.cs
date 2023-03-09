@@ -18,7 +18,8 @@ namespace UrlShortener.DLL.Services.UrlShortener
                 .Replace('+', '-')
                 .Replace('/', '_');
 
-            return base64Url.Substring(0, 7); 
+            string shortUrl = $"lu.p/{base64Url.Substring(0, 7)}";
+            return shortUrl; 
         }
     }
 }

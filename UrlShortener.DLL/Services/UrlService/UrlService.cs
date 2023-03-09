@@ -3,6 +3,7 @@ using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UrlShortener.BLL.Interfaces;
@@ -33,8 +34,6 @@ namespace UrlShortener.DLL.Services.UrlService
             var existingUrl = await _urlRepository.GetByOriginalUrl(command.Url);
             if(existingUrl != null)
             {
-                await AddHitCountAsync(existingUrl.Id);
-
                 return existingUrl.ShortUrl;
             }
 
@@ -47,14 +46,14 @@ namespace UrlShortener.DLL.Services.UrlService
                 CreatedAt= DateTime.UtcNow, 
             });
 
-            await AddHitCountAsync(urlModel.Id);
-
             return urlModel.ShortUrl;
         }
 
         public async Task<string> GetByShortUrl(string shortUrl)
         {
-            var urlView = await _urlRepository.GetByShortUrl(shortUrl);
+            var decodedUrl = WebUtility.UrlDecode(shortUrl);
+
+            var urlView = await _urlRepository.GetByShortUrl(decodedUrl);
             if(urlView == null) return "";
 
             await AddHitCountAsync(urlView.Id);

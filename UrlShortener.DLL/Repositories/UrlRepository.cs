@@ -35,6 +35,8 @@ namespace UrlShortener.DLL.Repositories
 
         public async Task<UrlModel> GetByShortUrl(string url)
         {
+            var getall = _mongoCollection.Find(x => true).ToList();
+
             var filter = Builders<UrlModel>.Filter.Eq(u => u.ShortUrl, url);
             return await _mongoCollection.Find(filter).FirstOrDefaultAsync();
         }
