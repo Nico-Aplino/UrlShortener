@@ -1,4 +1,12 @@
+using UrlShortener.API.Extensions;
+
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
+    .Build();
 
 // Add services to the container.
 
@@ -6,6 +14,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.RegisterServices(builder.Configuration);
 
 var app = builder.Build();
 

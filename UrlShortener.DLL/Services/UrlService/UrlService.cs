@@ -1,5 +1,4 @@
 ﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
-using AutoMapper;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -8,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using UrlShortener.BLL.Interfaces;
 using UrlShortener.BLL.Models;
+using UrlShortener.BLL.Models.RequestModels;
+using UrlShortener.DLL.Services.UrlShortener;
 
 namespace UrlShortener.DLL.Services.UrlService
 {
@@ -15,33 +16,38 @@ namespace UrlShortener.DLL.Services.UrlService
     {
         private readonly IUrlRepository _urlRepository;
         private readonly IHitCounterRepository _hitCounterRepository;
-        private readonly IValidator<UrlModel> _validator;
-        public UrlService(IHitCounterRepository hitCounterRepository, IUrlRepository urlRepository, IValidator<UrlModel> validator)
+        private readonly IValidator<ShortenUrlCommand> _validator;
+        private readonly IUrlShortenerService _urlShortenerService;
+        public UrlService(IHitCounterRepository hitCounterRepository, IUrlRepository urlRepository, IValidator<ShortenUrlCommand> validator, IUrlShortenerService urlShortenerService)
         {
             _hitCounterRepository = hitCounterRepository;
             _urlRepository = urlRepository;
             _validator = validator;
+            _urlShortenerService = urlShortenerService;
         }
 
-        public async Task<string> Save(UrlModel url)
+        public async Task<string> Save(ShortenUrlCommand command)
         {
-            var validationResult = await _validator.ValidateAsync(url);
-            if (!validationResult.IsValid)
-            {
-                throw new ArgumentException(validationResult.Errors.First().ErrorMessage, nameof(url));
-            }
+            await IsValidUrl(command);
 
-            var existingUrl = await _urlRepository.GetByOriginalUrl(url.Id);
+            var existingUrl = await _urlRepository.GetByOriginalUrl(command.Url);
             if(existingUrl != null)
             {
-                await AddHitCountAsync(existingUrl.ShortUrl);
+                await AddHitCountAsync(existingUrl.Id);
 
                 return existingUrl.ShortUrl;
             }
 
-            UrlModel urlModel = await _urlRepository.Add(url);
+            var shortUrl = await _urlShortenerService.ShortenUrl(command.Url);
 
-            await AddHitCountAsync(urlModel.ShortUrl);
+            var urlModel = await _urlRepository.Add(new()
+            {
+                OriginalUrl= command.Url,
+                ShortUrl= shortUrl,
+                CreatedAt= DateTime.UtcNow, 
+            });
+
+            await AddHitCountAsync(urlModel.Id);
 
             return urlModel.ShortUrl;
         }
@@ -53,6 +59,17 @@ namespace UrlShortener.DLL.Services.UrlService
 
             await AddHitCountAsync(urlView.Id);
             return urlView.OriginalUrl;
+        }
+
+        private async Task<bool> IsValidUrl(ShortenUrlCommand command)
+        {
+            var validationResult = await _validator.ValidateAsync(command);
+            if (!validationResult.IsValid)
+            {
+                throw new ArgumentException(validationResult.Errors.First().ErrorMessage, nameof(command));
+            }
+
+            return validationResult.IsValid;
         }
 
         private async Task AddHitCountAsync(string shortUrlId)
