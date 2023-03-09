@@ -5,14 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UrlShortener.BLL.Models;
+using UrlShortener.BLL.Models.RequestModels;
 
 namespace UrlShortener.BLL.Validations
 {
-    public class UrlValidator : AbstractValidator<UrlModel>
+    public class ShortenUrlCommandValidator : AbstractValidator<ShortenUrlCommand>
     {
-        public UrlValidator()
+        public ShortenUrlCommandValidator()
         {
-            RuleFor(x => x.OriginalUrl)
+            RuleFor(x => x.Url)
                 .NotEmpty().WithMessage("The URL must not be empty.")
                 .Must(url => Uri.TryCreate(url, UriKind.Absolute, out var uriResult) &&
                              (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
